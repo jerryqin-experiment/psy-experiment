@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>心理学实验视频</title>
+    <style>
+        body {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background-color: #f0f0f0;
+            font-family: sans-serif;
+        }
+        #video-container {
+            max-width: 90%;
+            text-align: center;
+        }
+        video {
+            width: 100%;
+            max-width: 800px; 
+            border-radius: 8px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        h1 {
+            color: #333;
+        }
+    </style>
+</head>
+<body>
+    <div id="video-container">
+        <h1>实验视频材料</h1>
+        <p>请点击播放按钮开始观看。</p>
+        <video id="my-video" controls preload="metadata" controlsList="nodownload">
+            <!-- 关键：在这里粘贴你刚刚从腾讯云获取并设置好的视频URL -->
+            <source src="https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_group1.mp4" type="video/mp4">
+            您的浏览器不支持 HTML5 视频。
+        </video>
+    </div>
+</body>
+</html>
