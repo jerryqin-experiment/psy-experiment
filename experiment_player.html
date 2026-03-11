@@ -268,8 +268,7 @@
 
             // 功能需求 1：行为追踪与动态密钥
             let failCount = 0;
-            // DEBUG: 将触发检测点由 25%/50%/75% 临时改为 1%/3%/6%
-            const attentionPoints = [0.01, 0.03, 0.06]; // 按比例触发的 3 个检测点（DEBUG）
+            const attentionPoints = [0.1, 0.25, 0.45, 0.75]; // 按比例触发的 4 个检测点
             let nextAttentionIndex = 0;
             let attentionActive = false;
             let penaltyActive = false;
@@ -287,7 +286,8 @@
             let penaltyTimerId = null;
             let countdownRemaining = 0;
 
-            let lastSafeTime = 0; // 用于禁止拖动进度条
+            let lastSafeTime = 0; // 用于禁止拖动进度条（记录最近一次“合法播放”的时间点）
+            let isBlockingSeek = false; // 标记当前是否在拦截一次拖动，避免死循环
 
             function showAttentionModal() {
                 attentionActive = true;
@@ -378,7 +378,13 @@
             });
 
             video.addEventListener('timeupdate', function () {
-                lastSafeTime = video.currentTime;
+                // 只有在正常播放过程中才更新 lastSafeTime：
+                // - 不在拦截拖动
+                // - 当前不处于 seeking（用户或代码刚刚跳转）
+                // - 处于播放状态
+                if (!isBlockingSeek && !video.seeking && !video.paused && isFinite(video.currentTime)) {
+                    lastSafeTime = video.currentTime;
+                }
 
                 const duration = video.duration || 0;
                 if (!duration || attentionActive || penaltyActive) return;
@@ -391,14 +397,29 @@
                 }
             });
 
-            // 禁止拖动进度条（DEBUG 阶段暂时注释掉，方便快速拖动测试结束事件）
-            // video.addEventListener('seeking', function () {
-            //     if (!isFinite(lastSafeTime)) return;
-            //     const diff = Math.abs(video.currentTime - lastSafeTime);
-            //     if (diff > 0.3) {
-            //         video.currentTime = lastSafeTime;
-            //     }
-            // });
+            // 禁止拖动进度条：
+            //  - 用户拖动到与 lastSafeTime 相差较大的位置 → 立即跳回 lastSafeTime，并暂停
+            //  - 点击播放等产生的极小跳动（< 0.1s）→ 视为正常行为，不拦截
+            video.addEventListener('seeking', function () {
+                if (!isFinite(lastSafeTime)) return;
+
+                const diff = Math.abs(video.currentTime - lastSafeTime);
+
+                // diff 很小的 seeking 一般是浏览器内部行为或点击播放时的轻微跳动，这种不拦截
+                if (diff <= 0.1) return;
+
+                // 认为是用户在拖动进度条 → 拦截
+                isBlockingSeek = true;
+                video.pause();
+                video.currentTime = lastSafeTime;
+            });
+
+            // 当我们把进度强制拉回后，浏览器会再触发一次 seeking/seeked，这里在“稳定”之后解除拦截标记
+            video.addEventListener('seeked', function () {
+                if (isBlockingSeek) {
+                    isBlockingSeek = false;
+                }
+            });
 
             // 播放结束时生成密钥并锁定
             video.addEventListener('ended', function () {
