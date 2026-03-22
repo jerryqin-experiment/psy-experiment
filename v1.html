@@ -1,0 +1,452 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>点击观看讨论材料</title>
+    <style>
+        :root {
+            --bg: #f0f0f0;
+            --panel: #ffffff;
+            --text: #222;
+            --muted: #555;
+            --shadow: 0 6px 18px rgba(0,0,0,0.14);
+            --radius: 10px;
+            --gap: 18px;
+        }
+
+        html, body {
+            height: 100%;
+        }
+
+        body {
+            margin: 0;
+            background-color: var(--bg);
+            font-family: sans-serif;
+            color: var(--text);
+        }
+
+        .layout {
+            box-sizing: border-box;
+            padding: 20px;
+            display: grid;
+            grid-template-columns: 1fr 2fr; /* 左 1/3，右 2/3 */
+            gap: var(--gap);
+            align-items: flex-start;
+            min-height: 100vh;
+        }
+
+        .panel {
+            background: var(--panel);
+            border-radius: var(--radius);
+            box-shadow: var(--shadow);
+        }
+
+        .text-panel {
+            padding: 18px 18px 12px;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        .video-panel {
+            padding: 14px;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+
+        h1 {
+            margin: 0 0 8px;
+            font-size: 20px;
+            line-height: 1.25;
+        }
+
+        h2 {
+            margin: 12px 0 8px;
+            font-size: 16px;
+            line-height: 1.25;
+        }
+
+        p {
+            margin: 0 0 12px;
+            color: var(--muted);
+        }
+
+        .instructions-wrap {
+            max-height: 17em; /* 约 10 行 (10 × line-height 1.7) */
+            overflow-y: auto;
+            margin: 0 0 12px;
+        }
+
+        .instructions {
+            margin: 0;
+            padding-left: 2.4em; /* 预留两位编号空间，避免 10、11 显示成 0、1 */
+            line-height: 1.7;
+            list-style-position: outside;
+        }
+
+        .instructions li + li {
+            margin-top: 6px;
+        }
+
+        .video-wrap {
+            flex: 1;
+            min-height: 0;
+            display: flex;
+        }
+
+        video {
+            width: 100%;
+            height: 100%;
+            max-height: calc(100vh - 20px - 20px - 14px - 14px); /* 视口 - layout padding - panel padding */
+            object-fit: contain;
+            border-radius: calc(var(--radius) - 2px);
+            background: #000;
+        }
+
+        /* 弹窗与遮罩 */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+
+        .modal {
+            background: #ffffff;
+            border-radius: 10px;
+            padding: 20px 24px 18px;
+            max-width: 420px;
+            width: 90%;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            color: #222;
+        }
+
+        .modal h2 {
+            margin: 0 0 10px;
+            font-size: 18px;
+        }
+
+        .modal p {
+            margin: 0 0 10px;
+            color: #444;
+        }
+
+        .modal-actions {
+            margin-top: 12px;
+            display: flex;
+            justify-content: flex-end;
+            gap: 10px;
+        }
+
+        .btn {
+            padding: 6px 14px;
+            border-radius: 6px;
+            border: none;
+            cursor: pointer;
+            font-size: 14px;
+        }
+
+        .btn-primary {
+            background: #2563eb;
+            color: #fff;
+        }
+
+        .btn-primary:disabled {
+            background: #9ca3af;
+            cursor: not-allowed;
+        }
+
+        .attention-danger {
+            background: #fee2e2;
+            border: 1px solid #f87171;
+        }
+
+        .attention-danger h2 {
+            color: #b91c1c;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        @media (max-width: 900px) {
+            .layout {
+                height: auto;
+                min-height: 100vh;
+                grid-template-columns: 1fr;
+            }
+            video {
+                height: auto;
+                max-height: none;
+            }
+            .video-wrap {
+                flex: 0 0 auto;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="layout">
+        <section class="panel text-panel" aria-label="文字信息">
+            <h1>流程说明</h1>
+            <p>
+                本段音频为您呈现的是一场真实的无领导小组讨论，包含以下两个阶段：<br>
+                <strong>阶段一：个人观点陈述（约 10 分钟）</strong>。成员将依次进行陈述，此阶段帮助您熟悉这 4 位成员的声音特征以及他们的初始观点。<br>
+                <strong>阶段二：自由讨论（约 25 分钟，核心环节）</strong>。随后，管理员会宣布自由讨论开始，这是录音的核心环节，请关注成员在自由互动中的表现，并作为您后续评价的重要依据。
+            </p>
+            <h1>讨论材料</h1>
+            <p><strong>选项清单：</strong></p>
+            <div class="instructions-wrap">
+            <ol class="instructions">
+                <li>发自内心地尊重和接纳孩子</li>
+                <li>多陪伴孩子，多和孩子沟通</li>
+                <li>引导孩子树立正确的价值观</li>
+                <li>鼓励孩子勇于担当责任</li>
+                <li>以身作则，为孩子树立榜样</li>
+                <li>鼓励孩子多参加课外活动</li>
+                <li>鼓励孩子担任学生干部</li>
+                <li>不以分数论英雄，不紧盯孩子成绩</li>
+                <li>鼓励孩子多和他人交往</li>
+                <li>鼓励孩子独立解决问题</li>
+                <li>多让孩子自主做决定</li>
+                <li>鼓励孩子尝试，能容许孩子犯错或失败</li>
+                <li>让孩子分担家务，承担家庭责任</li>
+                <li>对孩子提一定要求，制定必要的规则</li>
+                <li>作为幕后参谋，为孩子提供支持和建议</li>
+            </ol>
+            </div>
+            <p><br><strong>任务要求：</strong></p>
+            <p>
+                选出对培养领导力最重要的前5项和最不重要的后5项，并排序。
+                要求团队必须达成一致意见，不允许使用投票或举手表决
+            </p>
+        </section>
+
+        <section class="panel video-panel" aria-label="视频材料">
+            <h1>音频材料</h1>
+            <p>
+                <strong>【播放注意事项】</strong><br>
+                <strong>专注度检测：</strong> 播放期间将随机弹出检测提示。若未及时点击，音频将强制锁定 30 秒，且未通过记录将影响您的最终报酬。<br>
+                <strong>禁止快进：</strong> 为确保您完整获取信息，进度条拖拽功能已被禁用，请耐心收听。<br>
+                <strong>关于字幕：</strong> 字幕转录中可能存在个别错字或漏字。请您无需在意字幕瑕疵，一切以实际听到的语音为准。<br>
+                <strong>隐私消音：</strong> 录音与字幕已做匿名化处理（真实姓名已消音），成员全程的用字母代号表示，如【A】、【B】、【C】、【D】、【E】。
+            </p>
+            <div class="video-wrap">
+                <video id="my-video" controls preload="metadata" controlsList="nodownload">
+                    <!-- 关键：在这里粘贴你刚刚从腾讯云获取并设置好的视频URL -->
+                    <source src="https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g1.mp4" type="video/mp4">
+                    您的浏览器不支持 HTML5 视频。
+                </video>
+            </div>
+        </section>
+    </div>
+
+    <!-- 注意力检测弹窗 -->
+    <div id="attention-backdrop" class="modal-backdrop hidden" aria-hidden="true">
+        <div id="attention-modal" class="modal" role="alertdialog" aria-modal="true">
+            <h2>注意力检测</h2>
+            <p>如果您正在认真聆听，请在 <strong><span id="attention-countdown">10</span> 秒</strong> 内点击下方按钮。</p>
+            <div class="modal-actions">
+                <button id="attention-confirm-btn" class="btn btn-primary">我正在听</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 最终密钥弹窗 -->
+    <div id="final-backdrop" class="modal-backdrop hidden" aria-hidden="true">
+        <div class="modal" role="dialog" aria-modal="true">
+            <h2>【录音播放已结束】</h2>
+            <p>请将下方专属密钥复制并输入到外层问卷程序中，以继续后续的评价任务。</p>
+            <p>
+                您的专属密钥为：
+                <strong id="final-key" style="font-size: 24px; margin-left: 4px;">100</strong>
+                <button id="copy-key-btn" class="btn btn-primary" type="button">一键复制</button>
+            </p>
+        </div>
+    </div>
+
+    <script>
+        (function () {
+            const video = document.getElementById('my-video');
+            if (!video) return;
+
+            // 功能需求 1：行为追踪与动态密钥
+            let failCount = 0;
+            const attentionPoints = [0.1, 0.25, 0.45, 0.75]; // 按比例触发的 4 个检测点
+            let nextAttentionIndex = 0;
+            let attentionActive = false;
+            let penaltyActive = false;
+
+            const attentionBackdrop = document.getElementById('attention-backdrop');
+            const attentionModal = document.getElementById('attention-modal');
+            const attentionCountdownEl = document.getElementById('attention-countdown');
+            const attentionBtn = document.getElementById('attention-confirm-btn');
+
+            const finalBackdrop = document.getElementById('final-backdrop');
+            const finalKeyEl = document.getElementById('final-key');
+            const copyKeyBtn = document.getElementById('copy-key-btn');
+
+            let countdownTimerId = null;
+            let penaltyTimerId = null;
+            let countdownRemaining = 0;
+
+            let lastSafeTime = 0; // 用于禁止拖动进度条（记录最近一次“合法播放”的时间点）
+            let isBlockingSeek = false; // 标记当前是否在拦截一次拖动，避免死循环
+
+            function showAttentionModal() {
+                attentionActive = true;
+                penaltyActive = false;
+                attentionBackdrop.classList.remove('hidden');
+                attentionModal.classList.remove('attention-danger');
+                attentionBtn.disabled = false;
+
+                countdownRemaining = 10;
+                attentionCountdownEl.textContent = String(countdownRemaining);
+
+                if (countdownTimerId) clearInterval(countdownTimerId);
+                countdownTimerId = setInterval(function () {
+                    countdownRemaining -= 1;
+                    if (countdownRemaining <= 0) {
+                        attentionCountdownEl.textContent = '0';
+                        clearInterval(countdownTimerId);
+                        countdownTimerId = null;
+                        handleAttentionFailure();
+                    } else {
+                        attentionCountdownEl.textContent = String(countdownRemaining);
+                    }
+                }, 1000);
+            }
+
+            function hideAttentionModal() {
+                attentionBackdrop.classList.add('hidden');
+                if (countdownTimerId) {
+                    clearInterval(countdownTimerId);
+                    countdownTimerId = null;
+                }
+                if (penaltyTimerId) {
+                    clearInterval(penaltyTimerId);
+                    penaltyTimerId = null;
+                }
+                attentionActive = false;
+                penaltyActive = false;
+            }
+
+            function handleAttentionSuccess() {
+                // 成功分支：只需关闭弹窗，正常继续播放
+                hideAttentionModal();
+                nextAttentionIndex += 1;
+            }
+
+            function handleAttentionFailure() {
+                if (penaltyActive) return;
+                // 失败分支：暂停 + 惩罚 30s + failCount++
+                failCount += 1;
+                video.pause();
+                penaltyActive = true;
+
+                attentionModal.classList.add('attention-danger');
+                attentionBtn.disabled = true;
+
+                let penaltyRemaining = 30;
+                attentionCountdownEl.textContent = String(penaltyRemaining);
+
+                penaltyTimerId = setInterval(function () {
+                    penaltyRemaining -= 1;
+                    if (penaltyRemaining <= 0) {
+                        clearInterval(penaltyTimerId);
+                        penaltyTimerId = null;
+                        attentionBtn.disabled = false;
+                        attentionModal.classList.remove('attention-danger');
+                        attentionCountdownEl.textContent = '0';
+                        // 允许被试点击按钮继续播放
+                    } else {
+                        attentionCountdownEl.textContent = String(penaltyRemaining);
+                    }
+                }, 1000);
+
+                // 此检测点视为结束
+                nextAttentionIndex += 1;
+            }
+
+            attentionBtn.addEventListener('click', function () {
+                if (penaltyActive && !attentionBtn.disabled) {
+                    // 惩罚结束后点击：关闭弹窗并继续播放
+                    hideAttentionModal();
+                    if (video.paused && !video.ended) {
+                        video.play().catch(function () { });
+                    }
+                } else if (!penaltyActive) {
+                    // 10 秒内点击成功
+                    handleAttentionSuccess();
+                }
+            });
+
+            video.addEventListener('timeupdate', function () {
+                // 只有在正常播放过程中才更新 lastSafeTime：
+                // - 不在拦截拖动
+                // - 当前不处于 seeking（用户或代码刚刚跳转）
+                // - 处于播放状态
+                if (!isBlockingSeek && !video.seeking && !video.paused && isFinite(video.currentTime)) {
+                    lastSafeTime = video.currentTime;
+                }
+
+                const duration = video.duration || 0;
+                if (!duration || attentionActive || penaltyActive) return;
+
+                if (nextAttentionIndex < attentionPoints.length) {
+                    const targetTime = duration * attentionPoints[nextAttentionIndex];
+                    if (video.currentTime >= targetTime) {
+                        showAttentionModal();
+                    }
+                }
+            });
+
+            // 禁止拖动进度条：
+            //  - 用户拖动到与 lastSafeTime 相差较大的位置 → 立即跳回 lastSafeTime，并暂停
+            //  - 点击播放等产生的极小跳动（< 0.1s）→ 视为正常行为，不拦截
+            video.addEventListener('seeking', function () {
+                if (!isFinite(lastSafeTime)) return;
+
+                const diff = Math.abs(video.currentTime - lastSafeTime);
+
+                // diff 很小的 seeking 一般是浏览器内部行为或点击播放时的轻微跳动，这种不拦截
+                if (diff <= 0.1) return;
+
+                // 认为是用户在拖动进度条 → 拦截
+                isBlockingSeek = true;
+                video.pause();
+                video.currentTime = lastSafeTime;
+            });
+
+            // 当我们把进度强制拉回后，浏览器会再触发一次 seeking/seeked，这里在“稳定”之后解除拦截标记
+            video.addEventListener('seeked', function () {
+                if (isBlockingSeek) {
+                    isBlockingSeek = false;
+                }
+            });
+
+            // 播放结束时生成密钥并锁定
+            video.addEventListener('ended', function () {
+                // 锁定控制条：移除控制条并禁止再交互
+                video.removeAttribute('controls');
+            // 基础值为 1+小组编号（两位，如02）+0，共四位数字
+                const finalKey = 1010 + failCount;
+                finalKeyEl.textContent = String(finalKey);
+                finalBackdrop.classList.remove('hidden');
+            });
+
+            if (copyKeyBtn && navigator.clipboard) {
+                copyKeyBtn.addEventListener('click', function () {
+                    const text = finalKeyEl.textContent || '';
+                    navigator.clipboard.writeText(text).catch(function () { });
+                });
+            }
+        })();
+    </script>
+</body>
+</html>
