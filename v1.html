@@ -74,7 +74,7 @@
         }
 
         .instructions-wrap {
-            max-height: 17em; /* 约 10 行 (10 × line-height 1.7) */
+            max-height: 34em; /* 约为原 17em 的两倍，约 20 行可见区 */
             overflow-y: auto;
             margin: 0 0 12px;
         }
@@ -188,17 +188,22 @@
                 flex: 0 0 auto;
             }
         }
+
+        .modal-large {
+            max-width: 560px;
+        }
+
+        /* 开始弹窗：未来内容变多时更宽，并在高度超出时可滚动 */
+        .modal-xl {
+            max-width: 900px;
+            max-height: 85vh;
+            overflow-y: auto;
+        }
     </style>
 </head>
 <body>
     <div class="layout">
         <section class="panel text-panel" aria-label="文字信息">
-            <h1>流程说明</h1>
-            <p>
-                本段音频为您呈现的是一场真实的无领导小组讨论，包含以下两个阶段：<br>
-                <strong>阶段一：个人观点陈述（约 10 分钟）</strong>。成员将依次进行陈述，此阶段帮助您熟悉这 4 位成员的声音特征以及他们的初始观点。<br>
-                <strong>阶段二：自由讨论（约 25 分钟，核心环节）</strong>。随后，管理员会宣布自由讨论开始，这是录音的核心环节，请关注成员在自由互动中的表现，并作为您后续评价的重要依据。
-            </p>
             <h1>讨论材料</h1>
             <p><strong>选项清单：</strong></p>
             <div class="instructions-wrap">
@@ -228,22 +233,53 @@
         </section>
 
         <section class="panel video-panel" aria-label="视频材料">
-            <h1>音频材料</h1>
-            <p>
-                <strong>【播放注意事项】</strong><br>
-                <strong>专注度检测：</strong> 播放期间将随机弹出检测提示。若未及时点击，音频将强制锁定 30 秒，且未通过记录将影响您的最终报酬。<br>
-                <strong>禁止快进：</strong> 为确保您完整获取信息，进度条拖拽功能已被禁用，请耐心收听。<br>
-                <strong>关于字幕：</strong> 字幕转录中可能存在个别错字或漏字。请您无需在意字幕瑕疵，一切以实际听到的语音为准。<br>
-                <strong>隐私消音：</strong> 录音与字幕已做匿名化处理（真实姓名已消音），成员全程的用字母代号表示，如【A】、【B】、【C】、【D】、【E】。
-            </p>
+            <h1 id="stage-title">音频材料</h1>
+            <div id="stage-notes"></div>
             <div class="video-wrap">
-                <video id="my-video" controls preload="metadata" controlsList="nodownload">
-                    <!-- 关键：在这里粘贴你刚刚从腾讯云获取并设置好的视频URL -->
-                    <source src="https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g1.mp4" type="video/mp4">
+                <!-- 视频地址仅在下方脚本中配置：stage1VideoUrl、stage2VideoUrl（勿在此重复填写） -->
+                <video id="my-video" preload="metadata"
+                       controlsList="nodownload noplaybackrate noremoteplayback"
+                       disablePictureInPicture>
                     您的浏览器不支持 HTML5 视频。
                 </video>
             </div>
         </section>
+    </div>
+
+    <!-- 开始弹窗 -->
+    <div id="start-backdrop" class="modal-backdrop hidden" aria-hidden="true">
+        <div id="start-modal" class="modal modal-xl" role="dialog" aria-modal="true">
+            <h2>开始前提醒</h2>
+            <div id="start-text">
+                <p>
+                    <strong>【播放注意事项】</strong><br>
+                    <strong>任务流程：</strong> 任务共包含两段音频，在“观点陈述阶段”播放完成后，会跳转到“自由讨论阶段”。<br>
+                    <strong>专注度检测：</strong> 播放期间将随机弹出检测提示。若未及时点击，音频将强制锁定 30 秒，且未通过记录将影响您的最终报酬。<br>
+                    <strong>禁止快进：</strong> 为确保您完整获取信息，进度条拖拽功能已被禁用，请耐心收听。<br>
+                    <strong>关于字幕：</strong> 字幕转录中可能存在个别错字或漏字。请您无需在意字幕瑕疵，一切以实际听到的语音为准。<br>
+                    <strong>隐私消音：</strong> 录音与字幕已做匿名化处理（真实姓名已消音），成员全程的用字母代号表示，如【A】、【B】、【C】、【D】、【E】。
+                </p>
+                <p style="margin-bottom:0;color:#444;">请在倒计时结束后点击确认开始。</p>
+            </div>
+            <div class="modal-actions">
+                <button id="start-confirm-btn" class="btn btn-primary" type="button" disabled>
+                    <span>倒计时：</span><strong><span id="start-countdown">15</span>s</strong>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- 阶段切换弹窗 -->
+    <div id="stage2-backdrop" class="modal-backdrop hidden" aria-hidden="true">
+        <div id="stage2-modal" class="modal modal-large" role="dialog" aria-modal="true">
+            <h2>阶段提示</h2>
+            <p id="stage2-text">
+                <strong>观点陈述阶段结束，接下来是自由讨论阶段。</strong>
+            </p>
+            <div class="modal-actions">
+                <button id="stage2-confirm-btn" class="btn btn-primary" type="button">确定</button>
+            </div>
+        </div>
     </div>
 
     <!-- 注意力检测弹窗 -->
@@ -277,10 +313,18 @@
 
             // 功能需求 1：行为追踪与动态密钥
             let failCount = 0;
-            const attentionPoints = [0.1, 0.25, 0.45, 0.75]; // 按比例触发的 4 个检测点
+            let stageIndex = -1; // 0: 阶段一(观点陈述)；1: 阶段二(自由讨论)
+            let attentionPoints = []; // 当前阶段的注意力检测点（按比例触发）
             let nextAttentionIndex = 0;
             let attentionActive = false;
             let penaltyActive = false;
+
+            const startBackdrop = document.getElementById('start-backdrop');
+            const startCountdownEl = document.getElementById('start-countdown');
+            const startConfirmBtn = document.getElementById('start-confirm-btn');
+
+            const stage2Backdrop = document.getElementById('stage2-backdrop');
+            const stage2ConfirmBtn = document.getElementById('stage2-confirm-btn');
 
             const attentionBackdrop = document.getElementById('attention-backdrop');
             const attentionModal = document.getElementById('attention-modal');
@@ -297,6 +341,121 @@
 
             let lastSafeTime = 0; // 用于禁止拖动进度条（记录最近一次“合法播放”的时间点）
             let isBlockingSeek = false; // 标记当前是否在拦截一次拖动，避免死循环
+
+            const stageTitleEl = document.getElementById('stage-title');
+            const stageNotesEl = document.getElementById('stage-notes');
+
+            // TODO: 请把第二个视频URL粘贴到 stage2VideoUrl
+            const stage1VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g1_1.mp4";
+            const stage2VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g1_2.mp4";
+
+            // 禁止拖动进度条（seeking/seeked 拦截）；设为 false 可关闭以便调试
+            const enableSeekLock = true;
+
+            const stages = [
+                {
+                    title: "音频材料：观点陈述阶段（8~16min）",
+                    videoUrl: stage1VideoUrl,
+                    attentionPoints: [0.5], // 阶段一只检测一次：播放到 50%
+                    notesHtml:
+                        '<p>本阶段中，每位成员被要求分别使用2~3分钟时间陈述观点。请您利用此阶段，将各成员的声音特征与其字母代号建立对应关系，并初步了解团队的初始立场。</p>' +
+                        '<p><strong>注意：</strong> 由于本阶段缺乏互动，成员表现<strong style="color:#b91c1c">不计入</strong>后续的领导力评价。您在此阶段<strong style="color:#b91c1c">无需</strong>进行深度分析，放松聆听并熟悉成员即可。</p>'
+                },
+                {
+                    title: "音频材料：自由讨论阶段（25min）",
+                    videoUrl: stage2VideoUrl,
+                    attentionPoints: [0.1, 0.25, 0.45, 0.75], // 阶段二保留原样：4 个检测点
+                    notesHtml:
+                        '<p>本阶段为自由讨论阶段，需要您集中注意力，凭借您个人对「领导力」的理解与直觉，选拔出团队中最具领导能力或潜能的成员。</p>' +
+                        '<p><strong>建议评估视角：</strong> 领导力的展现方式多种多样，没有唯一标准。在观察时，您可以关注成员在任务推进（如整体发言参与情况）、关系维护（如协调团队氛围）、个人魅力，或是您认为与领导力相关的任何方面。</p>' +
+                        '<p><strong>无需记忆的细节：</strong> 请您保持面试官的视角，不要将精力耗费于记忆细节上。例如，您无需记住具体观点，也无需纠结某个局部的交流细节（例如某个具体项目的争辩结果）。</p>'
+                }
+            ];
+
+            function showStartModal() {
+                if (!startBackdrop || !startConfirmBtn) return;
+                startBackdrop.classList.remove('hidden');
+                startConfirmBtn.disabled = true;
+
+                const totalSeconds = 15;
+                let remaining = totalSeconds;
+                if (startCountdownEl) startCountdownEl.textContent = String(remaining);
+
+                if (countdownTimerId) clearInterval(countdownTimerId);
+                countdownTimerId = setInterval(function () {
+                    remaining -= 1;
+                    if (startCountdownEl) startCountdownEl.textContent = String(Math.max(remaining, 0));
+                    if (remaining <= 0) {
+                        clearInterval(countdownTimerId);
+                        countdownTimerId = null;
+                        startConfirmBtn.disabled = false;
+                    }
+                }, 1000);
+            }
+
+            function hideStartModal() {
+                if (!startBackdrop) return;
+                startBackdrop.classList.add('hidden');
+                if (countdownTimerId) {
+                    clearInterval(countdownTimerId);
+                    countdownTimerId = null;
+                }
+            }
+
+            function showStage2Prompt() {
+                if (!stage2Backdrop) return;
+                stage2Backdrop.classList.remove('hidden');
+            }
+
+            function hideStage2Prompt() {
+                if (!stage2Backdrop) return;
+                stage2Backdrop.classList.add('hidden');
+            }
+
+            function resetAttentionStateForStage() {
+                hideAttentionModal();
+                attentionPoints = stages[stageIndex]?.attentionPoints || [];
+                nextAttentionIndex = 0;
+                attentionActive = false;
+                penaltyActive = false;
+                if (penaltyTimerId) {
+                    clearInterval(penaltyTimerId);
+                    penaltyTimerId = null;
+                }
+            }
+
+            function setVideoToStage(newStageIndex, shouldAutoPlay) {
+                stageIndex = newStageIndex;
+                const stage = stages[stageIndex];
+                if (!stage || !stage.videoUrl || stage.videoUrl.indexOf("PASTE_STAGE2_VIDEO_URL_HERE") !== -1) {
+                    // 第二段URL未填写时，仍允许流程走到按钮，但不会开始播放
+                }
+
+                // 更新右侧文本
+                if (stageTitleEl) stageTitleEl.textContent = stage.title || '';
+                if (stageNotesEl) stageNotesEl.innerHTML = stage.notesHtml || '';
+
+                // 重置播放与检测状态
+                video.pause();
+                video.currentTime = 0;
+                lastSafeTime = 0;
+                isBlockingSeek = false;
+
+                resetAttentionStateForStage();
+
+                // 重新载入资源（确保 duration/metadata 更新）
+                video.src = stage.videoUrl;
+                video.load();
+
+                // 控制条在阶段一结束时会移除；阶段一开始/阶段二进入时重新开启
+                if (!video.hasAttribute('controls')) {
+                    video.setAttribute('controls', '');
+                }
+                // stage2 进入时 shouldAutoPlay=false：保留暂停，让被试自行点击播放
+                if (shouldAutoPlay) {
+                    video.play().catch(function () { });
+                }
+            }
 
             function showAttentionModal() {
                 attentionActive = true;
@@ -391,12 +550,12 @@
                 // - 不在拦截拖动
                 // - 当前不处于 seeking（用户或代码刚刚跳转）
                 // - 处于播放状态
-                if (!isBlockingSeek && !video.seeking && !video.paused && isFinite(video.currentTime)) {
+                if (enableSeekLock && !isBlockingSeek && !video.seeking && !video.paused && isFinite(video.currentTime)) {
                     lastSafeTime = video.currentTime;
                 }
 
                 const duration = video.duration || 0;
-                if (!duration || attentionActive || penaltyActive) return;
+                if (!duration || video.paused || attentionActive || penaltyActive) return;
 
                 if (nextAttentionIndex < attentionPoints.length) {
                     const targetTime = duration * attentionPoints[nextAttentionIndex];
@@ -409,32 +568,42 @@
             // 禁止拖动进度条：
             //  - 用户拖动到与 lastSafeTime 相差较大的位置 → 立即跳回 lastSafeTime，并暂停
             //  - 点击播放等产生的极小跳动（< 0.1s）→ 视为正常行为，不拦截
-            video.addEventListener('seeking', function () {
-                if (!isFinite(lastSafeTime)) return;
+            if (enableSeekLock) {
+                video.addEventListener('seeking', function () {
+                    if (!isFinite(lastSafeTime)) return;
 
-                const diff = Math.abs(video.currentTime - lastSafeTime);
+                    const diff = Math.abs(video.currentTime - lastSafeTime);
 
-                // diff 很小的 seeking 一般是浏览器内部行为或点击播放时的轻微跳动，这种不拦截
-                if (diff <= 0.1) return;
+                    // diff 很小的 seeking 一般是浏览器内部行为或点击播放时的轻微跳动，这种不拦截
+                    if (diff <= 0.1) return;
 
-                // 认为是用户在拖动进度条 → 拦截
-                isBlockingSeek = true;
-                video.pause();
-                video.currentTime = lastSafeTime;
-            });
+                    // 认为是用户在拖动进度条 → 拦截
+                    isBlockingSeek = true;
+                    video.pause();
+                    video.currentTime = lastSafeTime;
+                });
 
-            // 当我们把进度强制拉回后，浏览器会再触发一次 seeking/seeked，这里在“稳定”之后解除拦截标记
-            video.addEventListener('seeked', function () {
-                if (isBlockingSeek) {
-                    isBlockingSeek = false;
-                }
-            });
+                // 当我们把进度强制拉回后，浏览器会再触发一次 seeking/seeked，这里在“稳定”之后解除拦截标记
+                video.addEventListener('seeked', function () {
+                    if (isBlockingSeek) {
+                        isBlockingSeek = false;
+                    }
+                });
+            }
 
             // 播放结束时生成密钥并锁定
             video.addEventListener('ended', function () {
                 // 锁定控制条：移除控制条并禁止再交互
                 video.removeAttribute('controls');
-            // 基础值为 1+小组编号（两位，如02）+0，共四位数字
+
+                // 阶段一结束：弹出阶段提示，进入阶段二（由用户点击播放）
+                if (stageIndex === 0) {
+                    showStage2Prompt();
+                    return;
+                }
+
+                // 阶段二结束：生成密钥并锁定
+                // 基础值为 1+小组编号（两位，如02）+0，共四位数字
                 const finalKey = 1010 + failCount;
                 finalKeyEl.textContent = String(finalKey);
                 finalBackdrop.classList.remove('hidden');
@@ -446,6 +615,64 @@
                     navigator.clipboard.writeText(text).catch(function () { });
                 });
             }
+
+            // 点击启动按钮后进入阶段一
+            if (startConfirmBtn) {
+                startConfirmBtn.addEventListener('click', function () {
+                    hideStartModal();
+                    // 进入阶段一：不自动开始播放，等待被试手动点击播放
+                    setVideoToStage(0, false);
+                });
+            }
+
+            if (stage2ConfirmBtn) {
+                stage2ConfirmBtn.addEventListener('click', function () {
+                    hideStage2Prompt();
+                    // 进入阶段二：保留暂停，让被试点击播放
+                    setVideoToStage(1, false);
+                });
+            }
+
+            // 额外防快进：禁止常用“跳转/快进”键（在视频播放阶段生效）
+            document.addEventListener('keydown', function (e) {
+                if (stageIndex < 0) return;
+                if (attentionActive || penaltyActive) return;
+
+                const tag = (e.target && e.target.tagName) ? e.target.tagName.toLowerCase() : '';
+                if (tag === 'input' || tag === 'textarea' || tag === 'select') return;
+
+                const inPlayer = video && video.closest('.video-wrap') && video.closest('.video-wrap').contains(e.target);
+                if (!inPlayer) return;
+
+                const blockedKeys = ['ArrowRight', 'ArrowLeft', 'PageUp', 'PageDown', 'Home', 'End'];
+                if (blockedKeys.indexOf(e.key) !== -1) {
+                    e.preventDefault();
+                    e.stopPropagation();
+                }
+            }, true);
+
+            // 额外防快进：强制播放速率恢复为 1
+            video.addEventListener('ratechange', function () {
+                if (video.playbackRate && Math.abs(video.playbackRate - 1) > 0.001) {
+                    video.playbackRate = 1;
+                }
+            });
+
+            // 额外防快进：屏蔽右键菜单（部分插件可能借此操作）
+            video.addEventListener('contextmenu', function (e) {
+                e.preventDefault();
+            });
+
+            // 初始化：只展示右侧第一阶段文本与开场弹窗，视频先不允许交互播放
+            // 如果第二段URL未填写，被试在阶段二点击播放时会因资源不可用而无法播放（你需要把URL补全）
+            if (stageTitleEl) stageTitleEl.textContent = stages[0].title || '';
+            if (stageNotesEl) stageNotesEl.innerHTML = stages[0].notesHtml || '';
+            video.pause();
+            video.removeAttribute('controls');
+            video.src = stages[0].videoUrl;
+            video.load();
+
+            showStartModal();
         })();
     </script>
 </body>

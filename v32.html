@@ -207,27 +207,59 @@
             <h1>讨论材料</h1>
             <p><strong>选项清单：</strong></p>
             <div class="instructions-wrap">
-            <ol class="instructions">
-                <li>发自内心地尊重和接纳孩子</li>
-                <li>多陪伴孩子，多和孩子沟通</li>
-                <li>引导孩子树立正确的价值观</li>
-                <li>鼓励孩子勇于担当责任</li>
-                <li>以身作则，为孩子树立榜样</li>
-                <li>鼓励孩子多参加课外活动</li>
-                <li>鼓励孩子担任学生干部</li>
-                <li>不以分数论英雄，不紧盯孩子成绩</li>
-                <li>鼓励孩子多和他人交往</li>
-                <li>鼓励孩子独立解决问题</li>
-                <li>多让孩子自主做决定</li>
-                <li>鼓励孩子尝试，能容许孩子犯错或失败</li>
-                <li>让孩子分担家务，承担家庭责任</li>
-                <li>对孩子提一定要求，制定必要的规则</li>
-                <li>作为幕后参谋，为孩子提供支持和建议</li>
-            </ol>
+                <p class="stage-title">学前期 【0-6岁】</p>
+                <ol class="instructions">
+                    <li>在学前期与伙伴进行多人游戏</li>
+                    <li>在学前期是同伴中的“孩子王”</li>
+                    <li>在学前期相比于其他家庭，有较高的家庭经济地位</li>
+                    <li>在学前期较多的“延迟满足”行为，如攒钱买玩具等</li>
+                    <li>在学前期与父母互动亲密，需求得到很好的满足</li>
+                </ol>
+                <p class="stage-title">小学阶段 【6-12岁】</p>
+                <ol class="instructions" start="6">
+                    <li>在小学阶段，与其他同学结成伙伴，共同完成学习任务</li>
+                    <li>在小学阶段，常常自己打扫房间做家务</li>
+                    <li>在小学阶段，分担长辈部分责任，照顾弟弟妹妹</li>
+                    <li>在小学阶段，被其他同学霸凌欺负</li>
+                    <li>在小学阶段，被其他同学孤立排斥</li>
+                    <li>在小学阶段，受到老师的高度期望</li>
+                    <li>在小学阶段，参与多人竞技运动（如踢足球，打篮球等）</li>
+                    <li>在小学阶段，担任班干部</li>
+                </ol>
+                <p class="stage-title">初高中阶段 【12-18岁】</p>
+                <ol class="instructions" start="14">
+                    <li>初高中阶段，受到的来自父母的教养风格</li>
+                    <li>初高中阶段，心中树立的榜样或偶像</li>
+                    <li>初高中阶段，被其他同学霸凌欺负</li>
+                    <li>初高中阶段，被其他同学孤立排斥</li>
+                    <li>初高中阶段，参与多人竞技运动（如踢足球，打篮球等）</li>
+                    <li>初高中阶段，担任的干部级别</li>
+                    <li>初高中阶段，在意别人对自己的外貌、身材的评判，对自己的容貌不满意</li>
+                    <li>初高中阶段，有叛逆经历</li>
+                    <li>初高中阶段，总体学业成绩表现较好</li>
+                    <li>初高中阶段，有通过关系走后门的经历</li>
+                    <li>初高中阶段，自主做决定较多（如选学校，填志愿）</li>
+                    <li>初高中阶段，在多项课外活动中担任领导角色，如队长等</li>
+                </ol>
+                <p class="stage-title">青年期 【18-24岁】</p>
+                <ol class="instructions" start="26">
+                    <li>在18-24岁期间，参与过领导力发展和培训课程</li>
+                    <li>在18-24岁期间，在小组活动中扮演“意见领袖”</li>
+                    <li>在18-24岁期间，自主做决定较多（如恋爱、择业等）</li>
+                    <li>在18-24岁期间，在工作和学习中主动向上级提出建议</li>
+                    <li>在18-24岁期间，发起组织团体活动（如创业、担任社团领导等）</li>
+                    <li>在18-24岁期间，在工作或实习中遇到的第一位领导带来的影响</li>
+                    <li>在18-24岁期间，经历过恋爱关系</li>
+                    <li>在18-24岁期间，有明确的职业目标规划</li>
+                    <li>在18-24岁期间，因学历、性别、学校出身等遭受歧视</li>
+                    <li>在18-24岁期间，在主修或专业技能方向上的水平</li>
+                    <li>在18-24岁期间，参加专业竞赛或科研项目的经历</li>
+                    <li>在18-24岁期间，通过关系走后门的经历</li>
+                </ol>
             </div>
             <p><br><strong>任务要求：</strong></p>
             <p>
-                选出对培养领导力最重要的前5项和最不重要的后5项，并排序。
+                选出对培养领导力最重要的前6项和最不重要的后6项，对阶段关键程度进行排序。
                 要求团队必须达成一致意见，不允许使用投票或举手表决
             </p>
         </section>
@@ -346,8 +378,8 @@
             const stageNotesEl = document.getElementById('stage-notes');
 
             // TODO: 请把第二个视频URL粘贴到 stage2VideoUrl
-            const stage1VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g3_1.mp4";
-            const stage2VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g3_2.mp4";
+            const stage1VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/12.5_g6_1.mp4";
+            const stage2VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/12.5_g6_2.mp4";
 
             // 禁止拖动进度条（seeking/seeked 拦截）；设为 false 可关闭以便调试
             const enableSeekLock = true;
@@ -604,7 +636,7 @@
 
                 // 阶段二结束：生成密钥并锁定
                 // 基础值为 1+小组编号（两位，如02）+0，共四位数字
-                const finalKey = 1030 + failCount;
+                const finalKey = 1320 + failCount;
                 finalKeyEl.textContent = String(finalKey);
                 finalBackdrop.classList.remove('hidden');
             });

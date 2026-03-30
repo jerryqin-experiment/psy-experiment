@@ -346,8 +346,8 @@
             const stageNotesEl = document.getElementById('stage-notes');
 
             // TODO: 请把第二个视频URL粘贴到 stage2VideoUrl
-            const stage1VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g3_1.mp4";
-            const stage2VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g3_2.mp4";
+            const stage1VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/12.22_g1_1.mp4";
+            const stage2VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/12.22_g1_2.mp4";
 
             // 禁止拖动进度条（seeking/seeked 拦截）；设为 false 可关闭以便调试
             const enableSeekLock = true;
@@ -604,7 +604,7 @@
 
                 // 阶段二结束：生成密钥并锁定
                 // 基础值为 1+小组编号（两位，如02）+0，共四位数字
-                const finalKey = 1030 + failCount;
+                const finalKey = 1120 + failCount;
                 finalKeyEl.textContent = String(finalKey);
                 finalBackdrop.classList.remove('hidden');
             });
