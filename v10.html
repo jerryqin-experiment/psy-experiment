@@ -199,6 +199,18 @@
             max-height: 85vh;
             overflow-y: auto;
         }
+
+        /* 注意力检测弹窗：位置改到右侧 2/3 且中上；背景不变暗 */
+        #attention-backdrop {
+            background: transparent;
+        }
+
+        #attention-modal {
+            position: fixed;
+            left: 66.6667%;
+            top: 38%;
+            transform: translate(-50%, -50%);
+        }
     </style>
 </head>
 <body>
@@ -318,7 +330,7 @@
     <div id="attention-backdrop" class="modal-backdrop hidden" aria-hidden="true">
         <div id="attention-modal" class="modal" role="alertdialog" aria-modal="true">
             <h2>注意力检测</h2>
-            <p>如果您正在认真聆听，请在 <strong><span id="attention-countdown">10</span> 秒</strong> 内点击下方按钮。</p>
+            <p>如果您正在认真聆听，请在 <strong><span id="attention-countdown">6</span> 秒</strong> 内点击下方按钮。</p>
             <div class="modal-actions">
                 <button id="attention-confirm-btn" class="btn btn-primary">我正在听</button>
             </div>
@@ -496,7 +508,7 @@
                 attentionModal.classList.remove('attention-danger');
                 attentionBtn.disabled = false;
 
-                countdownRemaining = 10;
+                countdownRemaining = 6;
                 attentionCountdownEl.textContent = String(countdownRemaining);
 
                 if (countdownTimerId) clearInterval(countdownTimerId);

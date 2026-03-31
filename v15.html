@@ -116,6 +116,19 @@
             z-index: 999;
         }
 
+        /* 注意力检测弹窗：不再遮暗背景，并固定在右侧 2/3 区域的中上位置 */
+        #attention-backdrop {
+            background: transparent;
+        }
+
+        #attention-modal {
+            position: fixed;
+            left: 66.6667%;
+            top: 38%;
+            transform: translate(-50%, -50%);
+            width: min(420px, 90vw);
+        }
+
         .modal {
             background: #ffffff;
             border-radius: 10px;
@@ -464,7 +477,7 @@
                 attentionModal.classList.remove('attention-danger');
                 attentionBtn.disabled = false;
 
-                countdownRemaining = 10;
+                countdownRemaining = 6;
                 attentionCountdownEl.textContent = String(countdownRemaining);
 
                 if (countdownTimerId) clearInterval(countdownTimerId);
