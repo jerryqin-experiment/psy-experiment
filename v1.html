@@ -363,7 +363,7 @@
             const stage2VideoUrl = "https://my-experiment-video-1409644236.cos.ap-shanghai.myqcloud.com/11.29_g1_2.mp4";
 
             // 禁止拖动进度条（seeking/seeked 拦截）；设为 false 可关闭以便调试
-            const enableSeekLock = true;
+            const enableSeekLock = false;
 
             const stages = [
                 {
@@ -477,6 +477,13 @@
                 attentionModal.classList.remove('attention-danger');
                 attentionBtn.disabled = false;
 
+                // --- 新增：纯 JS 恢复默认文字 ---
+                const p = attentionCountdownEl.closest('p');
+                if (p && p.childNodes.length >= 3) {
+                    p.childNodes[0].textContent = '如果您正在认真聆听，请在 ';
+                    p.childNodes[2].textContent = ' 内点击下方按钮。';
+                }
+
                 countdownRemaining = 6;
                 attentionCountdownEl.textContent = String(countdownRemaining);
 
@@ -524,6 +531,13 @@
                 attentionModal.classList.add('attention-danger');
                 attentionBtn.disabled = true;
 
+                // --- 新增：纯 JS 修改为警告文字 ---
+                const p = attentionCountdownEl.closest('p');
+                if (p && p.childNodes.length >= 3) {
+                    p.childNodes[0].textContent = '您未能通过注意力检测！请在 ';
+                    p.childNodes[2].textContent = ' 后点击下方按钮。';
+                }
+
                 let penaltyRemaining = 30;
                 attentionCountdownEl.textContent = String(penaltyRemaining);
 
@@ -540,7 +554,7 @@
                         attentionCountdownEl.textContent = String(penaltyRemaining);
                     }
                 }, 1000);
-
+                
                 // 此检测点视为结束
                 nextAttentionIndex += 1;
             }
